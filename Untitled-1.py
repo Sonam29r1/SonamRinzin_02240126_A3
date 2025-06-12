@@ -143,10 +143,10 @@
 Beginning part A implementation
 '''
 
-
+import random
 
 class BankError(Exception):
-    """Base exception class for banking errors"""
+    """exception class for banking errors"""
     pass
 
 class InvalidAmountError(BankError):
@@ -162,14 +162,10 @@ class InvalidAccountError(BankError):
     pass
 
 class Bank_Account():
-    """Base class representing a bank account with basic operations"""
+    """class representing a bank account which performs few basic operations"""
     def __init__(self, id, passcode, account_category, funds=0):
         """
         Initialize a bank account with following parameter:
-            id (str): Account ID
-            passcode (str): Account passcode
-            account_category (str): Type of account (Personal/Business)
-            funds (float, optional): Initial balance. Defaults to 0.
         """
         self.id = id
         self.passcode = passcode
@@ -178,7 +174,11 @@ class Bank_Account():
     
     def deposit(self, amount):
         """
-        Deposit money into the account and
+        Deposit money into the account
+        Aeguments:
+            amount: amount to be deposited
+        returns:
+            str: showing amount of deposition and new balance
         Raises error:
             InvalidAmountError: If amount is not positive
         """
@@ -191,6 +191,10 @@ class Bank_Account():
 
         """
         Withdraw money from the account    
+        arguments:
+            amount: amount to be withdrawn
+        return:
+            str: showing amount withdrawn and new balance
         Raises:
             InvalidAmountError: If amount is not positive
             InsufficientFundsError: If account has insufficient funds
@@ -206,8 +210,13 @@ class Bank_Account():
     def transfer(self, amount, recipient_account):
         """
         Transfer money to another account
+        argument:
+            amount: amount to be transfereed
+            recipient_account: amount recipient
+        return:
+            str: shows amount trasferred and the recipient acc's id
         Raises:
-            BankError: For any transfer-related errors
+            BankError: For any transfer related errors
         """
         try:
             withdrawal_msg = self.withdraw(amount)
@@ -225,4 +234,123 @@ class Business_account(Bank_Account):
     """Class representing a business bank account"""
     def __init__(self, id, passcode, account_category="Business", funds=0):
         super().__init__(id, passcode, account_category, funds) #Using super() beacuase it is safer if the parent class name changes later.
+        
+class Banking_system:
+    """Class representing the banking system with account management"""
+    def __init__(self, filename="accounts.txt"):
+        """
+        Initialize the banking system
+        Args:
+            filename (str, optional): File to store accounts. Defaults to "accounts.txt".
+        """
+        self.filename = filename
+        self.accounts = self.load_accounts()
+    
+    def load_accounts(self):
+        """
+        Load accounts from file
+        
+        Returns:
+            dict: Dictionary of loaded accounts
+            used dictionary because it has time complexity average O(1) for lookups
+        """
+        accounts = {}
+        try:
+            with open(self.filename, "r") as file:
+                for line in file:
+                    try:
+                        id, passcode, account_category, funds = line.strip().split(",")
+                        funds = float(funds)
+                        if account_category == "Personal":
+                            account = Personal_account(id, passcode, account_category, funds)
+                        else:
+                            account = Business_account(id, passcode, account_category, funds)
+                        accounts[id] = account
+                    except ValueError:
+                        continue 
+        except FileNotFoundError:
+            pass
+        return accounts
+    
+    def save_accounts(self):
+        """Save all accounts to file"""
+        with open(self.filename, "w") as file:
+            for account in self.accounts.values():
+                file.write(f"{account.id},{account.passcode},{account.account_category},{account.funds}\n")
+    
+    def create_account(self, account_type):
+        """
+        Create a new account
+        Returns:
+            Bank_Account: The created account object
+        Raises:
+            ValueError: If account type is invalid
+        """
+        id = str(random.randint(10000, 99999))
+        passcode = str(random.randint(1000, 9999))
+        if account_type == "Personal":
+            account = Personal_account(id, passcode)
+        elif account_type == "Business":
+            account = Business_account(id, passcode)
+        else:
+            raise ValueError("Invalid account type")
+        self.accounts[id] = account
+        self.save_accounts()
+        return account
+    
+    def login(self, id, passcode):
+        """
+        Login to an account
+        
+        Arguments to be passed:
+            id: Account ID
+            passcode: Account passcode
+            
+        Returns:
+            Bank_Account: The logged in account object
+            
+        Raises:
+            InvalidAccountError: If credentials are invalid
+        """
+        account = self.accounts.get(id)
+        if not account or account.passcode != passcode:
+            raise InvalidAccountError("Invalid account ID or passcode")
+        return account
+    
+    def delete_account(self, id):
+        """
+        Delete an account
+        
+        Args:
+            id (str): Account ID to delete
+            
+        Raises:
+            InvalidAccountError: If account doesn't exist
+        """
+        if id not in self.accounts:
+            raise InvalidAccountError("Account does not exist")
+        del self.accounts[id]
+        self.save_accounts()
+    
+    def top_up_mobile(self, account, phone_number, amount):
+        """
+        Top up a mobile phone balance from bank account
+        We can use withdraw function instead of creating new one
+        
+        Arguments:
+            account (Bank_Account): Account to deduct from
+            phone_number (str): Phone number to top up
+            amount (float): Amount to top up
+            
+        Returns:
+            str: Confirmation message
+            
+        Raises:
+            BankError: For any transaction errors
+        """
+        try:
+            account.withdraw(amount)
+            return f"Successfully topped up Nu: {amount} to phone {phone_number}"
+        except BankError as e:
+            raise BankError(f"Mobile top-up failed: {str(e)}")
         
