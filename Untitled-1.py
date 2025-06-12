@@ -144,6 +144,8 @@ Beginning part A implementation
 '''
 
 import random
+import tkinter as tk
+from tkinter import messagebox, simpledialog
 
 class BankError(Exception):
     """exception class for banking errors"""
@@ -336,7 +338,7 @@ class Banking_system:
         """
         Top up a mobile phone balance from bank account
         We can use withdraw function instead of creating new one
-        
+
         Arguments:
             account (Bank_Account): Account to deduct from
             phone_number (str): Phone number to top up
@@ -354,3 +356,162 @@ class Banking_system:
         except BankError as e:
             raise BankError(f"Mobile top-up failed: {str(e)}")
         
+
+#Gui implementation
+class BankingGUI:
+    """Class providing a graphical user interface for the banking system"""
+    def __init__(self, banking_system):
+        """
+        Initialize the banking GUI
+        
+        Args:
+            banking_system (Banking_system): The banking system instance
+        """
+        self.bank = banking_system
+        self.current_account = None
+        
+        self.root = tk.Tk()
+        self.root.title("Banking System")
+        self.root.geometry("400x300")
+        
+        self.create_main_menu()
+    
+    def create_main_menu(self):
+        """Create the main menu interface"""
+        self.clear_window()
+        
+        tk.Label(self.root, text="Banking System", font=("Arial", 16)).pack(pady=10)
+        
+        tk.Button(self.root, text="1. Open Account", command=self.open_account).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="2. Login", command=self.login).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="3. Exit", command=self.root.quit).pack(fill=tk.X, padx=50, pady=5)
+    
+    def create_account_menu(self):
+        """Create the account operations menu"""
+        self.clear_window()
+        
+        tk.Label(self.root, text=f"Account {self.current_account.id}", font=("Arial", 14)).pack(pady=10)
+        
+        tk.Button(self.root, text="1. Check Balance", command=self.check_balance).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="2. Deposit", command=self.deposit).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="3. Withdraw", command=self.withdraw).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="4. Transfer", command=self.transfer).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="5. Mobile Top-up", command=self.mobile_topup).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="6. Delete Account", command=self.delete_account).pack(fill=tk.X, padx=50, pady=5)
+        tk.Button(self.root, text="7. Logout", command=self.logout).pack(fill=tk.X, padx=50, pady=5)
+    
+    def clear_window(self):
+        """Clear all widgets from the window"""
+        for widget in self.root.winfo_children():
+            widget.destroy()
+    
+    def open_account(self):
+        """Handle account opening"""
+        account_type = simpledialog.askstring("Account Type", "Enter account type (1 for Personal, 2 for Business):")
+        try:
+            if account_type == "1":
+                account = self.bank.create_account("Personal")
+            elif account_type == "2":
+                account = self.bank.create_account("Business")
+            else:
+                messagebox.showerror("Error", "Invalid account type")
+                return
+            
+            messagebox.showinfo("Account Created", 
+                              f"Account created successfully!\nAccount ID: {account.id}\nPasscode: {account.passcode}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+    
+    def login(self):
+        """Handle user login"""
+        account_id = simpledialog.askstring("Login", "Enter your account ID:")
+        passcode = simpledialog.askstring("Login", "Enter your passcode:", show="*")
+        
+        try:
+            self.current_account = self.bank.login(account_id, passcode)
+            self.create_account_menu()
+        except BankError as e:
+            messagebox.showerror("Login Failed", str(e))
+    
+    def check_balance(self):
+        """Display account balance"""
+        messagebox.showinfo("Account Balance", f"Your current balance is Nu: {self.current_account.funds}")
+    
+    def deposit(self):
+        """Handle deposit operation"""
+        amount = simpledialog.askfloat("Deposit", "Enter amount to deposit:")
+        try:
+            if amount is not None:
+                result = self.current_account.deposit(amount)
+                self.bank.save_accounts()
+                messagebox.showinfo("Deposit", result)
+        except BankError as e:
+            messagebox.showerror("Deposit Error", str(e))
+    
+    def withdraw(self):
+        """Handle withdrawal operation"""
+        amount = simpledialog.askfloat("Withdraw", "Enter amount to withdraw:")
+        try:
+            if amount is not None:
+                result = self.current_account.withdraw(amount)
+                self.bank.save_accounts()
+                messagebox.showinfo("Withdrawal", result)
+        except BankError as e:
+            messagebox.showerror("Withdrawal Error", str(e))
+    
+    def transfer(self):
+        """Handle transfer operation"""
+        recipient_id = simpledialog.askstring("Transfer", "Enter recipient account ID:")
+        amount = simpledialog.askfloat("Transfer", "Enter amount to transfer:")
+        
+        try:
+            if recipient_id and amount is not None:
+                recipient = self.bank.accounts.get(recipient_id)
+                if not recipient:
+                    raise InvalidAccountError("Recipient account not found")
+                result = self.current_account.transfer(amount, recipient)
+                self.bank.save_accounts()
+                messagebox.showinfo("Transfer", result)
+        except BankError as e:
+            messagebox.showerror("Transfer Error", str(e))
+    
+    def mobile_topup(self):
+        """Handle mobile top-up operation"""
+        phone_number = simpledialog.askstring("Mobile Top-up", "Enter phone number:")
+        amount = simpledialog.askfloat("Mobile Top-up", "Enter amount to top up:")
+        
+        try:
+            if phone_number and amount is not None:
+                result = self.bank.top_up_mobile(self.current_account, phone_number, amount)
+                self.bank.save_accounts()
+                messagebox.showinfo("Mobile Top-up", result)
+        except BankError as e:
+            messagebox.showerror("Top-up Error", str(e))
+    
+    def delete_account(self):
+        """Handle account deletion"""
+        confirm = messagebox.askyesno("Confirm", "Are you sure you want to delete this account?")
+        if confirm:
+            try:
+                self.bank.delete_account(self.current_account.id)
+                messagebox.showinfo("Account Deleted", "Your account has been deleted successfully")
+                self.current_account = None
+                self.create_main_menu()
+            except BankError as e:
+                messagebox.showerror("Deletion Error", str(e))
+    
+    def logout(self):
+        """Handle user logout"""
+        self.current_account = None
+        self.create_main_menu()
+    
+    def run(self):
+        """Run the GUI application"""
+        self.root.mainloop()
+
+def main():
+    """Main function to run the banking system"""
+    bank = Banking_system()
+    
+    gui = BankingGUI(bank)
+    gui.run()
