@@ -1,5 +1,21 @@
 import random
 
+class BankError(Exception):
+    """Base exception class for banking errors"""
+    pass
+
+class InvalidAmountError(BankError):
+    """Raised when an invalid amount is entered"""
+    pass
+
+class InsufficientFundsError(BankError):
+    """Raised when there are insufficient funds for a transaction"""
+    pass
+
+class InvalidAccountError(BankError):
+    """Raised when an invalid account is referenced"""
+    pass
+
 class Bank_Account():
     def __init__(self,id,passcode,account_category,funds=0):
         self.id = id
@@ -93,7 +109,7 @@ def main():
             else:
                 print("Unsupported account type")
                 continue
-            print("Account created. Account id: (account.account id), Passcode: (account.passcode)")
+            print(f"Account created. Account id: {account.account_id}, Passcode: {account.passcode}")
         elif choice == "2":
             account_id = input("Enter your account id: ") 
             passcode = input("Enter your passcode: ")
@@ -139,6 +155,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#Beginning part A implementation
 
 
         
