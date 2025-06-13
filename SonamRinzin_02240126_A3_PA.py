@@ -77,6 +77,12 @@ class Bank_Account():
         Raises:
             BankError: For any transfer related errors
         """
+
+        #When used PB test case, got 1 error in this fucntion, the error happened when trying to call deposit() on None
+        #fixed:
+        if recipient_account is None:
+            raise BankError("Invalid recipient account")
+    
         try:
             withdrawal_msg = self.withdraw(amount)
             recipient_account.deposit(amount)
