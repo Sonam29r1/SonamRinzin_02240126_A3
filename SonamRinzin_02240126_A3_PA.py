@@ -520,5 +520,5 @@ if __name__ == "__main__":
     app.run()
 
 #Commands to display documentation using python help command
-help(Bank_Account)
-help(BankingGUI)
+# help(Bank_Account)
+# help(BankingGUI)
