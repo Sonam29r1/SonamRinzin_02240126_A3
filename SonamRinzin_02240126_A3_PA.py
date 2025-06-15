@@ -8,6 +8,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
 
+'''Creating exception handling classes'''
+
 class BankError(Exception):
     pass
 
@@ -21,10 +23,14 @@ class InvalidAccountError(BankError):
     pass
 
 class Bank_Account():
-    """class representing a bank account which performs few basic operations"""
+    """class representing a bank account which performs few basic operations such as deposit,transfer etc..."""
     def __init__(self, id, passcode, account_category, funds=0):
         """
         Initialize a bank account with following parameter:
+        1.id
+        2.passcode
+        3.account_category
+        4.funds
         """
         self.id = id
         self.passcode = passcode
@@ -71,7 +77,7 @@ class Bank_Account():
         Transfer money to another account
         argument:
             amount: amount to be transfereed
-            recipient_account: amount recipient
+            recipient_account: recipient account id
         return:
             str: shows amount trasferred and the recipient acc's id
         Raises:
@@ -187,7 +193,7 @@ class Banking_system:
         Delete an account
         
         Args:
-            id (str): Account ID to delete
+            id : Account ID to delete
             
         Raises:
             InvalidAccountError: If account doesn't exist
@@ -227,6 +233,7 @@ class BankingController:
         self.bank = banking_system
         self.current_account = None
 
+        #A separate processuserinput function is created
     def processUserInput(self, choice, is_main_menu=True):
         """
         Processes all user input from both menus
@@ -351,7 +358,7 @@ class BankingGUI:
                 bg=self.bg_color).pack()
         
         tk.Label(header_frame,
-                text="Your Trusted Financial Partner",
+                text="Your Trusted Financial Partner DRUK BANK!",
                 font=self.label_font,
                 bg=self.bg_color).pack(pady=10)
         
@@ -381,7 +388,7 @@ class BankingGUI:
         
         # Footer
         tk.Label(self.root,
-                text="© 2023 Bhutanese Bank",
+                text="Druk Bank",
                 font=("Helvetica", 9),
                 bg=self.bg_color).pack(side=tk.BOTTOM, pady=20)
 
@@ -408,9 +415,9 @@ class BankingGUI:
         button_frame = tk.Frame(self.root, bg=self.bg_color)
         button_frame.pack(expand=True, fill=tk.BOTH, padx=30)
         
-        # Operation buttons
+        # Operation buttons with their commands
         operations = [
-            ("💵 1. Check Balance", self.handle_check_balance),
+            ("💵 1. Check Balance", self.balance_check),
             ("💰 2. Deposit", self.handle_deposit),
             ("💸 3. Withdraw", self.handle_withdraw),
             ("🔄 4. Transfer", self.handle_transfer),
@@ -448,7 +455,7 @@ class BankingGUI:
     def handle_login(self):
         self._handle_main_choice("2")
 
-    def handle_check_balance(self):
+    def balance_check(self):
         self._handle_account_choice("1")
 
     def handle_deposit(self):
@@ -511,3 +518,7 @@ if __name__ == "__main__":
     controller = BankingController(bank_system)
     app = BankingGUI(controller)
     app.run()
+
+#Commands to display documentation using python help command
+help(Bank_Account)
+help(BankingGUI)
