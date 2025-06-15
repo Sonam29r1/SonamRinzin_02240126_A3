@@ -3,7 +3,9 @@
 Beginning part A implementation
 '''
 
-import random
+import random #for generating id and passcode
+
+#For GUI
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
@@ -11,8 +13,21 @@ from tkinter import messagebox, simpledialog
 '''Creating exception handling classes'''
 
 class BankError(Exception):
+    '''
+    Serves as the parent class for all banking-related exceptions
+    Inherits from Python's base Exception class
+    Allows catching all banking exceptions with except BankError
+
+    '''
+
     pass
 
+'''
+Below are for specific or specialized exception
+InvalidAmountError: For invalid transaction amounts (negative/zero values)
+InsufficientFundsError: When account lacks sufficient funds for withdrawal/transfer
+InvalidAccountError: For authentication failures or missing accounts
+'''
 class InvalidAmountError(BankError):
     pass
 

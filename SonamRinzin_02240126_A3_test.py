@@ -1,10 +1,10 @@
 # SonamRinzin_02240126_A3_test.py
 import unittest
-import os
-from SonamRinzin_02240126_A3_PA import (
+import os #imported os because it manages files and directories during test
+from SonamRinzin_02240126_A3 import (
     Bank_Account,
     Personal_account,
-    Business_account,
+    Business_account, 
     Banking_system,
     InvalidAmountError,
     InsufficientFundsError,
